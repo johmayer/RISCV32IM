@@ -1,19 +1,25 @@
 # RISCV32IM
 
-Open-source development environment for a portable SystemVerilog RV32IM
-single-cycle core and its cocotb testbench.
+This is an implementation of a RV32IM or RV64IM single-cycle core with a 
+cocotb based verification.
 
-The current scope is deliberately small:
+## Design and testbench
+
+The design is a single-cycle RISC-V integer core with the RV32I base ISA and
+M extension. It includes instruction decode, an ALU, register file,
+program counter, branch/jump logic, and a byte-addressed load/store interface.
+The same RTL can be simulated as RV64IM by overriding `XLEN`.
+
+The cocotb testbench drives instructions and memory directly, then checks
+instruction results, memory operations, control-flow programs, and edge cases.
+Both configurations can be run with `make test-rv32` and `make test-rv64`.
+
+The current scope:
 
 - SystemVerilog RTL in [`rtl/core`](./rtl/core)
 - cocotb tests in [`tb/cocotb`](./tb/cocotb)
 - Icarus Verilog as the easiest default simulator
 - Verilator as an optional fast simulator and lint tool
-- no FPGA, ASIC, SoC, or software targets yet
-
-See [`docs/SINGLE_CYCLE_WORKFLOW.md`](./docs/SINGLE_CYCLE_WORKFLOW.md) for
-installation, source layout, test conventions, and the recommended first
-implementation sequence.
 
 ## Quick start
 
@@ -27,7 +33,4 @@ make doctor
 make test
 ```
 
-`make test` is intentionally a setup check until the first RTL top level and
-cocotb test are added. It will run the cocotb regression automatically once
-`rtl/core/rv32im_single_cycle.sv` and `tb/cocotb/test_rv32im_single_cycle.py`
-exist.
+`make test` runs the RV32IM cocotb regression.

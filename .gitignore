@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Cocotb and simulator output
+sim/build/
+sim/results/
+sim/coverage/
+*.vcd
+*.fst
+*.gtkw
+*.vvp
+*.log
+
+# Editor and OS files
+.vscode/
+.DS_Store

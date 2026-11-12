@@ -8,7 +8,9 @@
 //==============================================================================
 import rv32im_pkg::*;
 
-module instruction_decode (
+module instruction_decode #(
+    parameter int XLEN = 32
+) (
     input   logic [6:0]     opcode_i,           // Opcode from the instruction
     input   logic [2:0]     funct3_i,           // funct3 field from the instruction
     input   logic [6:0]     funct7_i,           // funct7 field from the instruction
@@ -83,6 +85,25 @@ always_comb begin
             endcase
         end
 
+        7'b0111011: begin // OP-32 (RV64I/RV64M)
+            if (XLEN == 64) begin
+                reg_write_en_o = 1'b1;
+                unique case ({funct7_i, funct3_i})
+                    {7'b0000000, 3'b000}: alu_op_o = ALU_ADDW;
+                    {7'b0100000, 3'b000}: alu_op_o = ALU_SUBW;
+                    {7'b0000000, 3'b001}: alu_op_o = ALU_SLLW;
+                    {7'b0000000, 3'b101}: alu_op_o = ALU_SRLW;
+                    {7'b0100000, 3'b101}: alu_op_o = ALU_SRAW;
+                    {7'b0000001, 3'b000}: alu_op_o = ALU_MULW;
+                    {7'b0000001, 3'b100}: alu_op_o = ALU_DIVW;
+                    {7'b0000001, 3'b101}: alu_op_o = ALU_DIVUW;
+                    {7'b0000001, 3'b110}: alu_op_o = ALU_REMW;
+                    {7'b0000001, 3'b111}: alu_op_o = ALU_REMUW;
+                    default: begin alu_op_o = ALU_NONE; reg_write_en_o = 1'b0; end
+                endcase
+            end
+        end
+
         OP_B_TYPE: begin
             // BRANCH Instructions:
             // - Compute target address (PC + imm_b) via ALU
@@ -106,6 +127,27 @@ always_comb begin
             endcase
         end
 
+        7'b0011011: begin // OP-IMM-32 (RV64I)
+            if (XLEN == 64) begin
+                alu_b_sel_o    = ALU_B_IMM;
+                imm_select_o   = IMM_I_TYPE;
+                reg_write_en_o = 1'b1;
+                unique case (funct3_i)
+                    3'b000: alu_op_o = ALU_ADDW;
+                    3'b001: begin
+                        if (funct7_i == 7'b0000000) alu_op_o = ALU_SLLW;
+                        else begin alu_op_o = ALU_NONE; reg_write_en_o = 1'b0; end
+                    end
+                    3'b101: begin
+                        if (funct7_i == 7'b0000000)      alu_op_o = ALU_SRLW;
+                        else if (funct7_i == 7'b0100000) alu_op_o = ALU_SRAW;
+                        else begin alu_op_o = ALU_NONE; reg_write_en_o = 1'b0; end
+                    end
+                    default: begin alu_op_o = ALU_NONE; reg_write_en_o = 1'b0; end
+                endcase
+            end
+        end
+
         OP_S_TYPE: begin
             // STORE Instructions:
             // - Compute effective memory address (rs1 + imm_s) via ALU
@@ -119,6 +161,7 @@ always_comb begin
                 3'b000: mem_op_o = MEM_SB;
                 3'b001: mem_op_o = MEM_SH;
                 3'b010: mem_op_o = MEM_SW;
+                3'b011: if (XLEN == 64) mem_op_o = MEM_SD;
                 default: begin
                     alu_op_o = ALU_NONE;
                     mem_op_o = MEM_NONE;
@@ -157,6 +200,8 @@ always_comb begin
                 3'b010: mem_op_o = MEM_LW;
                 3'b100: mem_op_o = MEM_LBU;
                 3'b101: mem_op_o = MEM_LHU;
+                3'b110: if (XLEN == 64) mem_op_o = MEM_LWU;
+                3'b011: if (XLEN == 64) mem_op_o = MEM_LD;
                 default: begin
                     alu_op_o       = ALU_NONE;
                     mem_op_o       = MEM_NONE;
@@ -181,12 +226,15 @@ always_comb begin
                 3'b110: alu_op_o = ALU_OR;
                 3'b111: alu_op_o = ALU_AND;
                 3'b001: begin
-                    if (funct7_i == 7'b0000000) alu_op_o = ALU_SLL;
+                    if ((XLEN == 64 && funct7_i[6:1] == 6'b000000) ||
+                        (XLEN != 64 && funct7_i == 7'b0000000)) alu_op_o = ALU_SLL;
                     else reg_write_en_o = 1'b0;
                 end
                 3'b101: begin
-                    if (funct7_i == 7'b0000000)      alu_op_o = ALU_SRL;
-                    else if (funct7_i == 7'b0100000) alu_op_o = ALU_SRA;
+                    if ((XLEN == 64 && funct7_i[6:1] == 6'b000000) ||
+                        (XLEN != 64 && funct7_i == 7'b0000000)) alu_op_o = ALU_SRL;
+                    else if ((XLEN == 64 && funct7_i[6:1] == 6'b010000) ||
+                             (XLEN != 64 && funct7_i == 7'b0100000)) alu_op_o = ALU_SRA;
                     else reg_write_en_o = 1'b0;
                 end
                 default: begin

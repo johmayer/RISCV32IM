@@ -64,12 +64,14 @@ alu_b_sel_t      alu_b_sel;
 logic [XLEN-1:0] alu_operand_a;
 logic [XLEN-1:0] alu_operand_b;
 
-/ load / store signals
+// load / store signals
 logic [XLEN-1:0] load_data;         // Data loaded from memory
 
 
 // Instantiate the program counter
-pc pc_inst (
+pc #(
+    .XLEN(XLEN)
+) pc_inst (
     .clk_i(clk_i),
     .rst_n_i(rst_n_i),
     .pc_mux_sel_i(pc_mux_sel),
@@ -104,7 +106,9 @@ immediate_extend #(
 );
 
 // Instruction decode unit
-instruction_decode instr_dec_inst (
+instruction_decode #(
+    .XLEN(XLEN)
+) instr_dec_inst (
     .opcode_i(instr_i[6:0]),
     .funct3_i(instr_i[14:12]),
     .funct7_i(instr_i[31:25]),

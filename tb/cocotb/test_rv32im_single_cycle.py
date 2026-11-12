@@ -527,7 +527,7 @@ async def test_all_alu_and_m_corner_cases(dut):
     min_val = -(1 << (xlen - 1))
     max_val = (1 << (xlen - 1)) - 1
 
-    p = []
+    p = init_zero_regs()
     p += load_const(1, min_val, xlen)       # x1 = INT_MIN (0x8000...0000)
     p += load_const(2, -1, xlen)            # x2 = -1 (0xFFFF...FFFF)
     p += load_const(3, max_val, xlen)       # x3 = INT_MAX (0x7FFF...FFFF)
@@ -558,12 +558,11 @@ async def test_all_alu_and_m_corner_cases(dut):
 @cocotb.test()
 async def test_rv64_word_instructions(dut):
     """Exercise RV64IM *W instructions and LWU/LD/SD (skips cleanly on RV32)."""
-    init_zero_regs()
     xlen = len(dut.pc_o)
     if xlen != 64:
         return
 
-    p = []
+    p = init_zero_regs()
     # Load 0x0000_0001_8000_0000 into x1 (bit 32 = 1, bit 31 = 1)
     p += load_const(1, 0x0000_0001_8000_0000, 64)
     p += load_const(2, 0x0000_0000_FFFF_FFFF, 64)

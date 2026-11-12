@@ -26,32 +26,44 @@ typedef enum logic [2:0] {
 
 
 // ALU operation type
-typedef enum logic [4:0] {
+typedef enum logic [5:0] {
     // RV32I
-    ALU_ADD    = 5'b00000,
-    ALU_SUB    = 5'b00001,
-    ALU_AND    = 5'b00010,
-    ALU_OR     = 5'b00011,
-    ALU_XOR    = 5'b00100,
-    ALU_SLL    = 5'b00101,
-    ALU_SRL    = 5'b00110,
-    ALU_SRA    = 5'b00111,
-    ALU_SLT    = 5'b01000,
-    ALU_SLTU   = 5'b01001,
-    ALU_LUI    = 5'b01010,
-    ALU_AUIPC  = 5'b01011,
+    ALU_ADD    = 6'b000000,
+    ALU_SUB    = 6'b000001,
+    ALU_AND    = 6'b000010,
+    ALU_OR     = 6'b000011,
+    ALU_XOR    = 6'b000100,
+    ALU_SLL    = 6'b000101,
+    ALU_SRL    = 6'b000110,
+    ALU_SRA    = 6'b000111,
+    ALU_SLT    = 6'b001000,
+    ALU_SLTU   = 6'b001001,
+    ALU_LUI    = 6'b001010,
+    ALU_AUIPC  = 6'b001011,
 
     // RV32M
-    ALU_MUL    = 5'b01100,
-    ALU_MULH   = 5'b01101,
-    ALU_MULHSU = 5'b01110,
-    ALU_MULHU  = 5'b01111,
-    ALU_DIV    = 5'b10000,
-    ALU_DIVU   = 5'b10001,
-    ALU_REM    = 5'b10010,
-    ALU_REMU   = 5'b10011,
+    ALU_MUL    = 6'b001100,
+    ALU_MULH   = 6'b001101,
+    ALU_MULHSU = 6'b001110,
+    ALU_MULHU  = 6'b001111,
+    ALU_DIV    = 6'b010000,
+    ALU_DIVU   = 6'b010001,
+    ALU_REM    = 6'b010010,
+    ALU_REMU   = 6'b010011,
 
-    ALU_NONE   = 5'b11111 // No operation (used for default cases)
+    // RV64I/RV64M word operations
+    ALU_ADDW   = 6'b10100,
+    ALU_SUBW   = 6'b10101,
+    ALU_SLLW   = 6'b10110,
+    ALU_SRLW   = 6'b10111,
+    ALU_SRAW   = 6'b11000,
+    ALU_MULW   = 6'b11001,
+    ALU_DIVW   = 6'b11010,
+    ALU_DIVUW  = 6'b11011,
+    ALU_REMW   = 6'b11100,
+    ALU_REMUW  = 6'b11101,
+
+    ALU_NONE   = 6'b111111 // No operation (used for default cases)
 
 } alu_op_t;
 
